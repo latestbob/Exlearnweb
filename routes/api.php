@@ -17,3 +17,20 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+//get all courses
+
+Route::get('/courses','CourseController@getallcourses');
+Route::get('/course/{coursecode}','CourseController@getuniquecourse');
+
+//Get all sections
+
+Route::get('/sections/{coursecode}','CourseController@getallsections');
+Route::get('/section/{section_code}','CourseController@getUniqueSection');
+
+//Get Lessons in a section
+
+Route::get('/lessons/{section_code}','CourseController@getLessons');
+
+Route::get('/lesson/{id}','CourseController@getUniquelesson');

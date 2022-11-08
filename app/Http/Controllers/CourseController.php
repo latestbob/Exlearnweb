@@ -116,4 +116,60 @@ class CourseController extends Controller
         return back()->with('msg','Lesson Created Successfully');
         
     }
+
+
+
+
+
+    ///////////////////////////ALL API ROUTES HERE ////////////////////////////////
+
+    public function getallcourses(){
+        $course  = Course::all();
+
+        return response()->json($course);
+    }
+
+    //get unique course
+
+    public function getuniquecourse($coursecode){
+        $course = Course::where('coursecode',$coursecode)->first();
+
+        return response()->json($course);
+    }
+
+
+    //get all sections in a course
+
+    public function getallsections($coursecode){
+        $section = Section::where('coursecode',$coursecode)->get();
+
+        return response()->json($section);
+    }
+
+
+    //get Unique Section
+
+    public function getUniqueSection($section_code){
+        $section = Section::where('section_code',$section_code)->first();
+        return response()->json($section);
+    }
+
+    //get lessons in a section
+
+    public function getLessons($section_code){
+        $lesson = Lesson::where('section_code',$section_code)->get();
+        
+        return response()->json($lesson);
+    }
+
+    //get unique lesson
+
+    public function getUniquelesson($id){
+
+        $lesson = Lesson::find($id);
+
+        return response()->json($lesson);
+    }
+
+    //////////////////////////////////////////////////////
 }
