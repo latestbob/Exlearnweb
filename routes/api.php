@@ -34,3 +34,13 @@ Route::get('/section/{section_code}','CourseController@getUniqueSection');
 Route::get('/lessons/{section_code}','CourseController@getLessons');
 
 Route::get('/lesson/{id}','CourseController@getUniquelesson');
+
+
+///////////////////////////////AUTH ROUTE HERE////////////////////
+
+Route::post('/register','AuthController@register')->name('register');
+Route::post('/login','AuthController@login')->name('login');
+
+
+
+Route::get('/user','AuthController@user')->middleware('auth:sanctum');

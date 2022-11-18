@@ -143,7 +143,20 @@ class CourseController extends Controller
     public function getallsections($coursecode){
         $section = Section::where('coursecode',$coursecode)->get();
 
-        return response()->json($section);
+       // return response()->json($section);
+
+       $myarray = [];
+
+       foreach($section as $sections){
+           $lesson = Lesson::where('section_code',$sections->section_code)->sum("minutes");
+
+           $myarray[] = [
+               "section" => $sections,
+               "minutes" => $lesson
+           ];
+       }
+
+       return $myarray;
     }
 
 
