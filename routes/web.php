@@ -13,9 +13,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+//pages with pages controller
+
+Route::get('/','PageController@index')->name('index');
+///
 
 
 Route::get('/course','CourseController@index')->name('coursehome');

@@ -6,6 +6,14 @@ use Illuminate\Http\Request;
 use App\Course;
 use App\Section;
 use App\Lesson;
+use App\Order;
+use App\Paystack;
+use App\Feeback;
+use App\User;
+use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Validation\Rule;
+
 
 class CourseController extends Controller
 {
@@ -124,6 +132,8 @@ class CourseController extends Controller
     ///////////////////////////ALL API ROUTES HERE ////////////////////////////////
 
     public function getallcourses(){
+
+        
         $course  = Course::all();
 
         return response()->json($course);
@@ -185,4 +195,193 @@ class CourseController extends Controller
     }
 
     //////////////////////////////////////////////////////
+
+
+
+
+    ///get free courses
+
+    public function free(){
+        $free = Course::where('payment_type',"Free")->get();
+
+        return $free;
+    }
+
+    //payment route
+
+    public function payment(Request $request){
+       
+        $validator = Validator::make($request->all(), [
+          
+           
+            'email' => 'required|string|email:rfc,dns|max:255|exists:users,email',
+            
+            'coursecode' => 'required',
+            'reference' => 'required',
+            'amount' => 'required'
+            
+           
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                'status' => 'failed',
+                'message' => $validator->errors()
+            ],400);
+        }
+
+    $course = Course::where('coursecode',$request->coursecode)->first();
+
+        $order = new Order;
+        $order->email = $request->email;
+        $order->coursecode = $request->coursecode;
+        $order->reference = $request->reference;
+        $order->amount = $request->amount;
+        $order->save();
+
+        return response()->json($course);
+
+
+
+
+        }
+
+        //get purchaed Course
+
+        public function purchased($email){
+           
+            $order = Order::where('email',$email)->get();
+
+                $course = [];
+            foreach($order as $items){
+
+                $mycourse = Course::where('coursecode',$items->coursecode)->first();
+
+                $course[] = [
+                    "coursecode" => $items->coursecode,
+                    "course" => $mycourse               
+                ];
+
+            }
+
+            return $course;
+        }
+
+
+        // get my course for a user
+
+    public function showcourses(Request $request,$email){
+
+        //if request search
+
+        $search = $request->search;
+
+        if($search){
+            $course = Course::when($search, function($query, $search){
+                $query->where('title', 'LIKE', "%{$search}%")
+             
+                ->orWhere('type', 'LIKE', "%{$search}%")
+                ->orWhere('level', 'LIKE', "%{$search}%")
+                ;
+                ;
+            })->paginate(10);
+
+            $showcourse = [];
+
+            foreach($course as $items){
+                $order = Order::where('email',$email)->where('coursecode',$items->coursecode)->exists();
+
+                if(!$order){
+                    $showcourse[]=[
+                        "course" => $items
+                    ];
+                }
+            }
+
+            return $showcourse;
+    
+        }
+
+        elseif($search == null) {
+
+        
+            //return "working";
+                   $course = Course::all();
+
+       $showcourse = [];
+
+       foreach($course as $items){
+        $order = Order::where('email',$email)->where('coursecode',$items->coursecode)->exists();
+
+        if(!$order){
+            $showcourse[]=[
+                "course" => $items
+            ];
+        }
+       }
+
+       return $showcourse;
+    
+    }
+}
+
+
+///public paystack 
+
+public function getpublickey(){
+    
+    $paystack = Paystack::where("gateway","paystack")->value("public_key");
+
+
+    return response()->json([
+        "status" => "success",
+        "public_key" => $paystack
+    ]);
+
+}
+
+
+public function feedback(Request $request){
+    $validator = Validator::make($request->all(), [
+          
+           
+        'email' => 'required|string|email:rfc,dns|max:255|exists:users,email',
+        
+     
+        'feedback' => 'required'
+        
+       
+    ]);
+
+    if ($validator->fails()) {
+        return response([
+            'status' => 'failed',
+            'message' => $validator->errors()
+        ],400);
+    }
+
+   $feedback = new Feeback;
+   $feedback->email = $request->email;
+   $feedback->feedback = $request->feedback;
+   $feedback->save();
+
+   $username = User::where("email",$request->email)->value("name");
+
+   return response()->json([
+       "status"=>"success",
+       "message"=>"Thanks ".$username. " your feedback has been received."
+   ]);
+}
+
+//get feedbacks
+
+public function feedbacks(){
+    $feedback = Feeback::all();
+    return response()->json([
+        'status' => 'success',
+        'feedbacks' => $feedback
+    ]);
+}
+
+
 }
